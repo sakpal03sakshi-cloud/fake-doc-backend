@@ -18,9 +18,21 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def register():
     return render_template('register.html')
 
-@app.route('/upload', methods=['POST'])
+@app.route("/upload", methods=["POST"])
 def upload():
-    return render_template('upload.html')
+    file = request.files["document"]
+
+    if file.filename == "":
+        return "No file selected"
+
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+    file.save(filepath)
+
+    # Fake verification logic (demo)
+    result = "REAL" if file.filename.lower().endswith((".jpg", ".png")) else "FAKE"
+
+    return render_template("result.html", result=result, image=file.filename)
+
 
 @app.route('/process', methods=['POST'])
 def process():
@@ -54,4 +66,5 @@ def process():
 
 if __name__ == '__main__':
      app.run(host='0.0.0.0', port=5000, debug=True)
+
 
