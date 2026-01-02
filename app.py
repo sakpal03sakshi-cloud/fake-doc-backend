@@ -11,6 +11,9 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Create uploads folder if not exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 @app.route('/')
 def register():
     return render_template('register.html')
@@ -51,3 +54,4 @@ def process():
 
 if __name__ == '__main__':
      app.run(host='0.0.0.0', port=5000, debug=True)
+
