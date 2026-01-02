@@ -1,25 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Verification Result</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Result</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-
-    <h2>Document Verification Result</h2>
-
-    <div class="result-box">
-        <p><strong>Status:</strong> {{ result }}</p>
-        <p><strong>Confidence:</strong> {{ confidence }}%</p>
-    </div>
-
-    {% if image_url %}
-        <h3>Uploaded Document</h3>
-        <img src="{{ image_url }}" width="300">
-    {% endif %}
-
-    <br><br>
-    <a href="/">Go Back</a>
-
+<div class="container">
+    <h2>Verification Result</h2>
+    <p><strong>Status:</strong> {{ status }}</p>
+    <p><strong>Confidence:</strong> {{ confidence }}%</p>
+    <p><strong>Remarks:</strong> {{ remark }}</p>
+</div>
 </body>
 </html>
