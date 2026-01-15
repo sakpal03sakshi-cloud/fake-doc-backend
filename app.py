@@ -1,74 +1,60 @@
 from flask import Flask, render_template, request
-from werkzeug.utils import secure_filename
+import os
 from PIL import Image
 import pytesseract
-import os
-
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
 
 app = Flask(__name__)
 
-# Upload settings
 UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Create upload folder if not exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-@app.route('/')
+# ---------------- HOME / REGISTER ----------------
+@app.route('/', methods=['GET', 'POST'])
 def register():
+    if request.method == 'POST':
+        return render_template('upload.html')
     return render_template('register.html')
 
 
+# ---------------- UPLOAD PAGE ----------------
 @app.route('/upload')
 def upload():
     return render_template('upload.html')
 
 
+# ---------------- PROCESS DOCUMENT ----------------
 @app.route('/process', methods=['POST'])
 def process():
-    # ✅ SAFETY CHECK
     if 'document' not in request.files:
-        return "ERROR: No file part named 'document'"
+        return "No file uploaded", 400
 
     file = request.files['document']
-
     if file.filename == '':
-        return "ERROR: No file selected"
+        return "No selected file", 400
 
-    if not allowed_file(file.filename):
-        return "ERROR: File type not allowed"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(filepath)
 
-    filename = secure_filename(file.filename)
-    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(path)
+    # OCR
+    try:
+        img = Image.open(filepath)
+        text = pytesseract.image_to_string(img)
+    except:
+        text = ""
 
-    extracted_text = ""
-
-    # OCR only for images
-    if filename.lower().endswith(('png', 'jpg', 'jpeg')):
-        img = Image.open(path)
-        extracted_text = pytesseract.image_to_string(img)
-
-    # Simple document validation logic
     keywords = ['government', 'india', 'name', 'date', 'id']
-    score = sum(1 for k in keywords if k in extracted_text.lower())
+    score = sum(1 for k in keywords if k in text.lower())
 
     if score >= 3:
         status = "REAL DOCUMENT"
         confidence = "90%"
-        remark = "Document structure and content look valid."
+        remark = "Looks valid"
     else:
         status = "FAKE DOCUMENT"
         confidence = "55%"
-        remark = "Missing official patterns or text."
+        remark = "Missing official patterns"
 
     return render_template(
         'result.html',
@@ -77,8 +63,11 @@ def process():
         remark=remark
     )
 
+
 if __name__ == '__main__':
-     app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
+
+
 
 
 
