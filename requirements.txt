@@ -2,3 +2,7 @@ flask
 pillow
 pytesseract
 opencv-python
+gunicorn
+Werkzeug
+
+
